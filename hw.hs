@@ -16,7 +16,12 @@ data Ninja = Ninja {name :: String,
                     ability2 :: String,
                     r :: Int,
                     score :: Float}
-                    deriving (Ord, Eq, Show)
+                    deriving (Ord, Eq)
+
+
+
+instance Show Ninja where
+        show (Ninja name _ status _ _ _ _ round score ) = show name ++ ", Score: " ++ show score ++ ", Status: " ++ show status ++ ", Round: " ++ show round ++ "\n"
 
 
 abilityScore :: String -> Float
@@ -85,7 +90,7 @@ prompt prmpt = do
 
 input :: String -> IO String
 input prompt = do
-        hSetBuffering stdout NoBuffering
+        hSetBuffering stdout NoBuffering -- maybe replace with a hFlush stdout?
         putStr prompt
         r <- getLine
         return r
