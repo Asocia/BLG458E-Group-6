@@ -83,22 +83,26 @@ prompt prmpt = do
         action <- getLine
         return action
 
+input :: String -> IO String
+input prompt = do
+        putStr prompt
+        r <- getLine
+        return r
+
+
 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo f l w n e = do
-        choice <- getLine
-        case choice of
+        choice <- input "Enter the country code: "
+        let lowered_choice = map toLower choice
+        case lowered_choice of
                 "e" -> print e
-                "E" -> print e
                 "f" -> print f
-                "F" -> print f
                 "l" -> print l
-                "L" -> print l
                 "w" -> print w
-                "W" -> print w
                 "n" -> print n
-                "N" -> print n
-                _ -> print "none"
+                ""  -> error "enter a country"
+                _   -> error "No such country"
 
 
 main :: IO ()
@@ -109,9 +113,9 @@ main = do
         -- print $ country $ head all_ninjas
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
-        
-        print wind
+        countryNinjaInfo fire lightning water wind earth
+        -- print wind
         print "end"
-        
+
 
         
