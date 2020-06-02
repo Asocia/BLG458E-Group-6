@@ -19,7 +19,6 @@ data Ninja = Ninja {name :: String,
                     deriving (Ord, Eq, Show)
 
 
-
 abilityScore :: String -> Float
 abilityScore ability = case ability of 
                 "Clone"     -> 20.0
@@ -45,9 +44,9 @@ calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
 
                 
 initNinja :: [String] -> Float -> Float -> Ninja
-initNinja params s1 s2 = Ninja (params !! 0) countryChar "junior" s1 s2 (params !! 4) (params !! 5) 0 scr
+initNinja params s1 s2 = Ninja (params !! 0) countryChar "junior" s1 s2 (params !! 4) (params !! 5) 0 score
     where
-        scr = calculateScore s1 s2  (params !! 4) (params !! 5)
+        score = calculateScore s1 s2  (params !! 4) (params !! 5)
         countryChar = case (params !! 1) of
                 "Fire"      -> 'f'
                 "Lightning" -> 'l'
@@ -63,7 +62,7 @@ readNinjas file ninjas = do
         end <- hIsEOF file
         if not end then do
                 line <- hGetLine file
-                let params = words line 
+                let params = words line
                 let score1 = read(params !! 2) :: Float
                 let score2 = read(params !! 3) :: Float 
 
@@ -102,21 +101,16 @@ countryNinjaInfo f l w n e = do
                 _ -> print "none"
 
 
-        
 main :: IO ()
 main = do
         args <- getArgs 
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
         -- print $ country $ head all_ninjas
-        let fire = filter (\ninja -> country ninja == 'f') all_ninjas
-        let lightning = filter (\ninja -> country ninja == 'l') all_ninjas
-        let water = filter (\ninja -> country ninja == 'w') all_ninjas
-        let wind = filter (\ninja -> country ninja == 'n') all_ninjas
-        let earth = filter (\ninja -> country ninja == 'e') all_ninjas
+        let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
+        let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
         
-        print fire
-        --showUIList "correct"
+        print wind
         print "end"
         
 
