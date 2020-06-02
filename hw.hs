@@ -85,6 +85,7 @@ prompt prmpt = do
 
 input :: String -> IO String
 input prompt = do
+        hSetBuffering stdout NoBuffering
         putStr prompt
         r <- getLine
         return r
