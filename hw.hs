@@ -19,31 +19,31 @@ data Ninja = Ninja {name :: String,
                     score :: Float}
                     deriving Show
 
-fire :: [Ninja] 
-fire = [
-        Ninja {name = "Naruto", country='F', status = "Junior", exam1 = 40, exam2 = 45, ability1 = "Clone", ability2 = "Summon" , r = 0, score = 10.0},
-        Ninja {name = "Sasuke", country='F', status = "Junior", exam1 = 50, exam2 = 60, ability1 = "Lightning", ability2 = "Fire", r = 0 , score = 10.0},
-        Ninja {name = "Neiji", country='F', status = "Junior", exam1 = 40, exam2 = 75, ability1 = "Vision", ability2 = "Hit", r = 0 , score = 10.0}]
-lightning :: [Ninja] 
-lightning = [
-        Ninja {name = "Sana", country='L', status = "Junior", exam1 = 55, exam2 = 65, ability1 = "Lightning", ability2 = "Hit", r = 0 , score = 10.0},
-        Ninja {name = "Aimi", country='L', status = "Junior", exam1 = 60, exam2 = 65, ability1 = "Blade", ability2 = "Rock", r = 0 , score = 10.0},
-        Ninja {name = "Kira", country='L', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Storm", ability2 = "Rock", r = 0 , score = 10.0}]
+-- fire :: [Ninja] 
+-- fire = [
+--         Ninja {name = "Naruto", country='F', status = "Junior", exam1 = 40, exam2 = 45, ability1 = "Clone", ability2 = "Summon" , r = 0, score = 10.0},
+--         Ninja {name = "Sasuke", country='F', status = "Junior", exam1 = 50, exam2 = 60, ability1 = "Lightning", ability2 = "Fire", r = 0 , score = 10.0},
+--         Ninja {name = "Neiji", country='F', status = "Junior", exam1 = 40, exam2 = 75, ability1 = "Vision", ability2 = "Hit", r = 0 , score = 10.0}]
+-- lightning :: [Ninja] 
+-- lightning = [
+--         Ninja {name = "Sana", country='L', status = "Junior", exam1 = 55, exam2 = 65, ability1 = "Lightning", ability2 = "Hit", r = 0 , score = 10.0},
+--         Ninja {name = "Aimi", country='L', status = "Junior", exam1 = 60, exam2 = 65, ability1 = "Blade", ability2 = "Rock", r = 0 , score = 10.0},
+--         Ninja {name = "Kira", country='L', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Storm", ability2 = "Rock", r = 0 , score = 10.0}]
 
-water :: [Ninja] 
-water = [Ninja {name = "Midare", country='W', status = "Junior", exam1 = 35, exam2 = 45, ability1 = "Hit", ability2 = "Water", r = 0 , score = 10.0},
-        Ninja {name = "Suiu", country='W', status = "Junior", exam1 = 45, exam2 = 55, ability1 = "Water", ability2 = "Blade", r = 0 , score = 10.0},
-        Ninja {name = "Samidare", country='W', status = "Junior", exam1 = 30, exam2 = 55, ability1 = "Water", ability2 = "Hit", r = 0, score = 10.0 }]
+-- water :: [Ninja] 
+-- water = [Ninja {name = "Midare", country='W', status = "Junior", exam1 = 35, exam2 = 45, ability1 = "Hit", ability2 = "Water", r = 0 , score = 10.0},
+--         Ninja {name = "Suiu", country='W', status = "Junior", exam1 = 45, exam2 = 55, ability1 = "Water", ability2 = "Blade", r = 0 , score = 10.0},
+--         Ninja {name = "Samidare", country='W', status = "Junior", exam1 = 30, exam2 = 55, ability1 = "Water", ability2 = "Hit", r = 0, score = 10.0 }]
 
-wind :: [Ninja] 
-wind = [Ninja {name = "Gaara", country='N', status = "Junior", exam1 = 55, exam2 = 80, ability1 = "Vision", ability2 = "Sand", r = 0, score = 10.0},
-        Ninja {name = "Temari", country='N', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Hit", ability2 = "Blade" , r = 0, score = 10.0},
-        Ninja {name = "Kankuro", country='N', status = "Junior", exam1 = 30, exam2 = 50, ability1 = "Hit", ability2 = "Storm" , r = 0, score = 10.0}]
+-- wind :: [Ninja] 
+-- wind = [Ninja {name = "Gaara", country='N', status = "Junior", exam1 = 55, exam2 = 80, ability1 = "Vision", ability2 = "Sand", r = 0, score = 10.0},
+--         Ninja {name = "Temari", country='N', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Hit", ability2 = "Blade" , r = 0, score = 10.0},
+--         Ninja {name = "Kankuro", country='N', status = "Junior", exam1 = 30, exam2 = 50, ability1 = "Hit", ability2 = "Storm" , r = 0, score = 10.0}]
 
-earth :: [Ninja] 
-earth = [Ninja {name = "Haruki", country='E', status = "Junior", exam1 = 50, exam2 = 64, ability1 = "Blade", ability2 = "Rock", r = 0 , score = 10.0},
-        Ninja {name = "Miyazaki", country='E', status = "Junior", exam1 = 45, exam2 = 55, ability1 = "Rock", ability2 = "Hit" , r = 0, score = 10.0},
-        Ninja {name = "Hiroshi", country='E', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Storm", ability2 = "Rock", r = 0 , score = 10.0}]
+-- earth :: [Ninja] 
+-- earth = [Ninja {name = "Haruki", country='E', status = "Junior", exam1 = 50, exam2 = 64, ability1 = "Blade", ability2 = "Rock", r = 0 , score = 10.0},
+--         Ninja {name = "Miyazaki", country='E', status = "Junior", exam1 = 45, exam2 = 55, ability1 = "Rock", ability2 = "Hit" , r = 0, score = 10.0},
+--         Ninja {name = "Hiroshi", country='E', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Storm", ability2 = "Rock", r = 0 , score = 10.0}]
 
 -- fireNinjaInit :: [String] -> Float -> Float -> Ninja
 -- fireNinjaInit ninja s1 s2 =
@@ -104,7 +104,7 @@ initNinja params s1 s2 = Ninja (params !! 0) countryChar "junior" s1 s2 (params 
                 
 
 
-readNinjas :: Handle -> [Ninja] ->  IO [Ninja] --FIXIT: bunun void func olması lazım ama void yazpınca file okuması hata veriyor
+readNinjas :: Handle -> [Ninja] ->  IO [Ninja]
 readNinjas file ninjas = do
         end <- hIsEOF file
         if not end then do
@@ -138,7 +138,14 @@ main = do
         args <- getArgs 
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
-        print $ head all_ninjas
+        -- print $ country $ head all_ninjas
+        let fire = filter (\ninja -> country ninja == 'f') all_ninjas
+        let lightning = filter (\ninja -> country ninja == 'l') all_ninjas
+        let water = filter (\ninja -> country ninja == 'w') all_ninjas
+        let wind = filter (\ninja -> country ninja == 'n') all_ninjas
+        let earth = filter (\ninja -> country ninja == 'e') all_ninjas
+        
+        print fire
         --showUIList "correct"
         print "end"
         
