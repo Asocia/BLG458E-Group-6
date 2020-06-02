@@ -17,6 +17,7 @@ data Ninja = Ninja {name :: String,
                     ability2 :: String,
                     r :: Int,
                     score :: Float}
+                    deriving Show
 
 fire :: [Ninja] 
 fire = [
@@ -44,25 +45,25 @@ earth = [Ninja {name = "Haruki", country='E', status = "Junior", exam1 = 50, exa
         Ninja {name = "Miyazaki", country='E', status = "Junior", exam1 = 45, exam2 = 55, ability1 = "Rock", ability2 = "Hit" , r = 0, score = 10.0},
         Ninja {name = "Hiroshi", country='E', status = "Junior", exam1 = 40, exam2 = 60, ability1 = "Storm", ability2 = "Rock", r = 0 , score = 10.0}]
 
-fireNinjaInit :: [String] -> Float -> Float -> Ninja
-fireNinjaInit ninja s1 s2 =
-        let nin = Ninja {name = (ninja !! 0), country='F', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0, score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))} in nin
+-- fireNinjaInit :: [String] -> Float -> Float -> Ninja
+-- fireNinjaInit ninja s1 s2 =
+--         let nin = Ninja {name = (ninja !! 0), country='F', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0, score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))} in nin
 
-lightningNinjaInit :: [String] -> Float -> Float -> Ninja
-lightningNinjaInit ninja s1 s2 =
-        let nin = Ninja {name = (ninja !! 0), country='L', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0, score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))  } in nin
+-- lightningNinjaInit :: [String] -> Float -> Float -> Ninja
+-- lightningNinjaInit ninja s1 s2 =
+--         let nin = Ninja {name = (ninja !! 0), country='L', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0, score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))  } in nin
 
-waterNinjaInit :: [String] -> Float -> Float -> Ninja
-waterNinjaInit ninja s1 s2 =
-        let nin = Ninja {name = (ninja !! 0), country='W', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5)) } in nin
+-- waterNinjaInit :: [String] -> Float -> Float -> Ninja
+-- waterNinjaInit ninja s1 s2 =
+--         let nin = Ninja {name = (ninja !! 0), country='W', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5)) } in nin
 
-windNinjaInit :: [String] -> Float -> Float -> Ninja
-windNinjaInit ninja s1 s2 =
-        let nin = Ninja {name = (ninja !! 0), country='N', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5)) } in nin
+-- windNinjaInit :: [String] -> Float -> Float -> Ninja
+-- windNinjaInit ninja s1 s2 =
+--         let nin = Ninja {name = (ninja !! 0), country='N', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5)) } in nin
 
-earthNinjaInit :: [String] -> Float -> Float -> Ninja
-earthNinjaInit ninja s1 s2 =
-        let nin = Ninja {name = (ninja !! 0), country='E', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))} in nin
+-- earthNinjaInit :: [String] -> Float -> Float -> Ninja
+-- earthNinjaInit ninja s1 s2 =
+--         let nin = Ninja {name = (ninja !! 0), country='E', status = "dunno", exam1 = s1, exam2 = s2, ability1 = (ninja !! 4), ability2 = (ninja !! 5), r = 0 , score = (calculateScore s1 s2 (ninja !! 4) (ninja !! 5))} in nin
 
 
 abilityScore :: String -> Float
@@ -78,68 +79,47 @@ abilityScore ability = case ability of
                 "Summon"    -> 50.0
                 "Storm"     -> 10.0
                 "Rock"      -> 20.0
-                _           -> error "error"
+                _           -> error "No such ability"
 
 
 calculateScore :: Float -> Float -> String -> String -> Float
-calculateScore e1 e2 a1 a2 = let
+calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
+    where 
         abi1 = abilityScore a1
         abi2 = abilityScore a2
-        scr = 0.5 * e1 + 0.3 * e2 + abi1 + abi2
-        in scr
 
 
+                
+initNinja :: [String] -> Float -> Float -> Ninja
+initNinja params s1 s2 = Ninja (params !! 0) countryChar "junior" s1 s2 (params !! 4) (params !! 5) 0 score
+    where
+        score = calculateScore s1 s2  (params !! 4) (params !! 5)
+        countryChar = case (params !! 1) of
+                "Fire"      -> 'f'
+                "Lightning" -> 'l'
+                "Water"     -> 'w'
+                "Wind"      -> 'n'
+                "Earth"     -> 'e'
+                _           -> error "No such country"
+                
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-placeToCountry :: [String] -> Float -> Float -> Ninja
-placeToCountry ninja s1 s2 = case (ninja !! 1) of 
-                "Fire"      -> fireNinjaInit ninja s1 s2
-                "Lightning" -> fireNinjaInit ninja s1 s2
-                "Water"     -> fireNinjaInit ninja s1 s2
-                "Wind"      -> fireNinjaInit ninja s1 s2
-                "Earth"     -> fireNinjaInit ninja s1 s2
-                _           -> error "no ninja"
-                 
-
-
-readNinja :: Handle -> IO() --FIXIT: bunun void func olması lazım ama void yazpınca file okuması hata veriyor
-readNinja file = do
+readNinjas :: Handle -> [Ninja] ->  IO [Ninja] --FIXIT: bunun void func olması lazım ama void yazpınca file okuması hata veriyor
+readNinjas file ninjas = do
         end <- hIsEOF file
         if not end then do
                 line <- hGetLine file
                 let placeholder = T.splitOn (T.pack " ") (T.pack line) --okunan satırı kelimelerine ayırıyor hangi countryden geldiğini bulmamız için
-                let ninja = map T.unpack placeholder --kelimelerine ayırdığımız zaman tipi T.text tarzı bir şey olmuştu burda tipini stringe çevirdim
-                let score1 = read(ninja !! 2) :: Float
-                let score2 = read(ninja !! 3) :: Float 
-                let ph = placeToCountry ninja score1 score2
-                readNinja file
-                else do
-                        print ""
+                let params = map T.unpack placeholder --kelimelerine ayırdığımız zaman tipi T.text tarzı bir şey olmuştu burda tipini stringe çevirdim
+                let country = read(params !! 1) :: String
+                let score1 = read(params !! 2) :: Float
+                let score2 = read(params !! 3) :: Float 
+
+                let ninja = initNinja params score1 score2
+
+                readNinjas file (ninja:ninjas)
+        else do
+                return ninjas
      
 prompt :: String -> IO String
 prompt prmt = do
@@ -157,7 +137,8 @@ main :: IO ()
 main = do
         args <- getArgs 
         file <- openFile (head args) ReadMode
-        readNinja file
+        all_ninjas <- readNinjas file []
+        print $ head all_ninjas
         --showUIList "correct"
         print "end"
         
