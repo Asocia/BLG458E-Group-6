@@ -193,7 +193,7 @@ main = do
         all_ninjas <- readNinjas file []
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
-        --showUIList True fire lightning wind water earth
+        showUIList True fire lightning wind water earth
         --let sasuke =  filter (\ninja -> name ninja =="Sasuke") all_ninjas
         --print sasuke
         --let sorted_fire = sortBy(\n1 n2 -> compare (score n2) (score n1)) fire
