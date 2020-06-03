@@ -142,18 +142,38 @@ listDelete :: Ninja -> [Ninja] -> [Ninja]
 listDelete deletedNinja c = updatedList
         where
                 updatedList = filter (\ninja -> ninja /= deletedNinja) c
+
                 
 listUpdate :: Ninja -> [Ninja] -> [Ninja]
 listUpdate updatedNinja c = updatedList
         where
                 placeholder = filter (\ninja -> ninja /= updatedNinja) c
+                
                 stat = if (r updatedNinja) < 3 then "Junior" else "Journeyman"
-                unorderedUpdatedList = placeholder ++ [
+                updatedList = placeholder ++ [
                         Ninja {name = (name updatedNinja), country = (country updatedNinja), status = stat,
                                         exam1 = (exam1 updatedNinja), exam2 = (exam2 updatedNinja), 
                                         ability1 = (ability1 updatedNinja), ability2 = (ability2 updatedNinja), 
                                         r = (r updatedNinja)+1, score = (score updatedNinja)+10 }]
-                updatedList = ninjaInfoSort unorderedUpdatedList
+                
+
+combiningNinjasforUpdate :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
+combiningNinjasforUpdate nin f l w n e = case (country nin) of
+        'f' -> return (head (listUpdate nin f)) ++ l ++ w ++ n ++ e
+        'l' -> return (head (listUpdate nin l)) ++ f ++ w ++ n ++ e
+        'w' -> return (head (listUpdate nin w)) ++ l ++ f ++ n ++ e
+        'n' -> return (head (listUpdate nin n)) ++ l ++ w ++ f ++ e
+        'e' -> return (head (listUpdate nin e)) ++ l ++ w ++ n ++ f
+        _   -> error ""
+
+combiningNinjasforDelete :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
+combiningNinjasforDelete nin f l w n e = case (country nin) of
+        'f' -> return (head (listDelete nin f)) ++ l ++ w ++ n ++ e
+        'l' -> return (head (listDelete nin l)) ++ f ++ w ++ n ++ e
+        'w' -> return (head (listDelete nin w)) ++ l ++ f ++ n ++ e
+        'n' -> return (head (listDelete nin n)) ++ l ++ w ++ f ++ e
+        'e' -> return (head (listDelete nin e)) ++ l ++ w ++ n ++ f
+        _   -> error ""
 
 
 ninjaRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -178,22 +198,21 @@ ninjaRound f l w n e = do
                                                 else do
                                                         putStr "Winner: "
                                                         let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)
-                                                        print (head winner)       
-                                                        let uplist1 = listDelete (winner !! 1) (head(convertCountry  [(country (winner !! 1))] f l w n e))
-                                                        {-if firstCountry == secondCountry 
-                                                                then
-                                                                        let uplist2 = listUpdate (winner !! 0) (country uplist1)
-                                                                        else
-                                                                                      let uplist2 =listUpdate (winner !! 0) (head(convertCountry  [(country (head winner))] f l w n e))
-                                                        -}
-                                                        let uplist2 = listUpdate (winner !! 0) (head(convertCountry  [(country (head winner))] f l w n e))
+                                                        print (head winner)   
 
-                                                        --print uplist2
 
-                                                       --let newAllNinjas = uplist1 ++ uplist2 
+                                                        let uplist1 = combiningNinjasforDelete (winner !! 1) f l w n e 
+                                                        let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) uplist1
+                                                        let [ee, ff, ll, nn, ww] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
+                                                       
+                                                        print sortedNinjas
+                                                        let uplist2 = combiningNinjasforUpdate (winner !! 0) ff ll ww nn ee
+                                                        let sortedNinjas2 = sortBy (\n1 n2 -> compare (country n1) (country n2)) uplist2
+                                                        let [eee, fff, lll, nnn, www] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas2
 
-                                                        --let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) newAllNinjas
-                                                        showUIList True f l n w e
+                                                        --print sortedNinjas2
+
+                                                        showUIList True fff lll www nnn eee
 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
