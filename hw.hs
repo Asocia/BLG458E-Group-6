@@ -206,6 +206,11 @@ ninjaRound f l w n e = do
                                                         showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
 
 
+journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
+journeymanList f l w n e = do
+
+        let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (f++l++w++n++e)
+        print (ninjaInfoSort unsortedjourney)
 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -219,7 +224,7 @@ showUIList state f l w n e = do
                 "b" -> allNinjaInfo f l w n e
                 "c" -> ninjaRound f l w n e
                 --"d" -> return--CountryRound
-                --"e" -> JourneymanList f l w n e -- fill the func
+                "e" -> journeymanList f l w n e
                 _   -> showUIList False f l w n e
 
 
@@ -231,11 +236,6 @@ main = do
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let [earth, fire, lightning, water, wind] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
         showUIList True fire lightning wind water earth
-        --let sasuke =  filter (\ninja -> name ninja =="Sasuke") all_ninjas
-        --print sasuke
-        --let sorted_fire = sortBy(\n1 n2 -> compare (score n2) (score n1)) fire
-        --print sorted_fire
-        print "end"
         
 
         
