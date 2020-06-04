@@ -157,22 +157,22 @@ listUpdate updatedNinja c = updatedList
                                         r = (r updatedNinja)+1, score = (score updatedNinja)+10 }]
                 
 
-combiningNinjasforUpdate :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
+combiningNinjasforUpdate :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
 combiningNinjasforUpdate nin f l w n e = case (country nin) of
-        'f' -> return (head (listUpdate nin f)) ++ l ++ w ++ n ++ e
-        'l' -> return (head (listUpdate nin l)) ++ f ++ w ++ n ++ e
-        'w' -> return (head (listUpdate nin w)) ++ l ++ f ++ n ++ e
-        'n' -> return (head (listUpdate nin n)) ++ l ++ w ++ f ++ e
-        'e' -> return (head (listUpdate nin e)) ++ l ++ w ++ n ++ f
+        'f' -> return ((listUpdate nin f):l:w:n:e:[])
+        'l' -> return [f,(listUpdate nin l),w,n,e]
+        'w' -> return [f,l,(listUpdate nin w),n,e]
+        'n' -> return [f,l,w,(listUpdate nin n),e]
+        'e' -> return [f,l,w,n,(listUpdate nin e)]
         _   -> error ""
 
-combiningNinjasforDelete :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
+combiningNinjasforDelete :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
 combiningNinjasforDelete nin f l w n e = case (country nin) of
-        'f' -> return (head (listDelete nin f)) ++ l ++ w ++ n ++ e
-        'l' -> return (head (listDelete nin l)) ++ f ++ w ++ n ++ e
-        'w' -> return (head (listDelete nin w)) ++ l ++ f ++ n ++ e
-        'n' -> return (head (listDelete nin n)) ++ l ++ w ++ f ++ e
-        'e' -> return (head (listDelete nin e)) ++ l ++ w ++ n ++ f
+        'f' -> return ((listDelete nin f):l:w:n:e:[])
+        'l' -> return [f,(listDelete nin l),w,n,e]
+        'w' -> return [f,l,(listDelete nin w),n,e]
+        'n' -> return [f,l,w,(listDelete nin n),e]
+        'e' -> return [f,l,w,n,(listDelete nin e)]
         _   -> error ""
 
 
@@ -199,20 +199,9 @@ ninjaRound f l w n e = do
                                                         putStr "Winner: "
                                                         let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)
                                                         print (head winner)   
-
-
-                                                        let uplist1 = combiningNinjasforDelete (winner !! 1) f l w n e 
-                                                        let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) uplist1
-                                                        let [ee, ff, ll, nn, ww] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
-                                                       
-                                                        print sortedNinjas
-                                                        let uplist2 = combiningNinjasforUpdate (winner !! 0) ff ll ww nn ee
-                                                        let sortedNinjas2 = sortBy (\n1 n2 -> compare (country n1) (country n2)) uplist2
-                                                        let [eee, fff, lll, nnn, www] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas2
-
-                                                        --print sortedNinjas2
-
-                                                        showUIList True fff lll www nnn eee
+                                                        let uplist1 = combiningNinjasforDelete (winner !! 1) f l w n e                                                                                                              
+                                                        let uplist2 = combiningNinjasforUpdate (winner !! 0) (head (head uplist1)) ((head uplist1) !! 1) ((head uplist1) !! 2) ((head uplist1) !! 3) ((head uplist1) !! 4)
+                                                        showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
