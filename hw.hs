@@ -90,7 +90,7 @@ prompt valid = do
         
 ninjaInfoPrompt :: IO String
 ninjaInfoPrompt = do
-        putStrLn "Enter the country code: "
+        putStr "Enter the country code: "
         hSetBuffering stdout NoBuffering
         countryCode <- getLine
         return countryCode
@@ -173,29 +173,36 @@ ninjaRound f l w n e = do
         firstName <- getLine
         putStr "Enter the country code of the first ninja: "
         firstCountry <- getLine
-        let ninja1 = filter (\ninja -> name ninja == firstName) (head(convertCountry firstCountry f l w n e))
-        if null ninja1 then do
-                        putStrLn "Please enter a valid name-country pair."
+        if (firstCountry `notElem` ["f","l","w","n","e"]) then do
+                        putStrLn "Please enter a valid country."
                         ninjaRound f l w n e
                         else do
-                                putStr "Enter the name of the second ninja: "
-                                secondName <- getLine
-                                putStr "Enter the country code of the second ninja: "
-                                secondCountry <- getLine
-                                let ninja2 = filter (\ninja -> name ninja == secondName) (head(convertCountry secondCountry f l w n e))
-                                if null ninja2 then do
+                                let ninja1 = filter (\ninja -> name ninja == firstName) (head(convertCountry firstCountry f l w n e))
+                                if null ninja1 then do
                                                 putStrLn "Please enter a valid name-country pair."
                                                 ninjaRound f l w n e
                                                 else do
-                                                        putStr "Winner: "
-                                                        let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)   
-                                                        let uplist1 = updateNinja listDelete (winner !! 1) f l w n e                                                                                                              
-                                                        let uplist2 = updateNinja listUpdate (winner !! 0) (head (head uplist1)) ((head uplist1) !! 1) ((head uplist1) !! 2) ((head uplist1) !! 3) ((head uplist1) !! 4)
-                                                        
-                                                        print (filter(\ninja -> (name ninja) == (name (head winner))) (head (convertCountry [(country (head winner))] (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4))))
+                                                        putStr "Enter the name of the second ninja: "
+                                                        secondName <- getLine
+                                                        putStr "Enter the country code of the second ninja: "
+                                                        secondCountry <- getLine
+                                                        if (secondCountry `notElem` ["f","l","w","n","e"]) then do
+                                                                        putStrLn "Please enter a valid country."
+                                                                        ninjaRound f l w n e
+                                                                        else do
+                                                                                let ninja2 = filter (\ninja -> name ninja == secondName) (head(convertCountry secondCountry f l w n e))
+                                                                                if null ninja2 then do
+                                                                                                putStrLn "Please enter a valid name-country pair."
+                                                                                                ninjaRound f l w n e
+                                                                                                else do
+                                                                                                        putStr "Winner: "
+                                                                                                        let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)   
+                                                                                                        let uplist1 = updateNinja listDelete (winner !! 1) f l w n e                                                                                                              
+                                                                                                        let uplist2 = updateNinja listUpdate (winner !! 0) (head (head uplist1)) ((head uplist1) !! 1) ((head uplist1) !! 2) ((head uplist1) !! 3) ((head uplist1) !! 4)
+                                                                                                        
+                                                                                                        print (filter(\ninja -> (name ninja) == (name (head winner))) (head (convertCountry [(country (head winner))] (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4))))
 
-                                                        showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
-
+                                                                                                        showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
 
 journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 journeymanList f l w n e = do
@@ -203,6 +210,31 @@ journeymanList f l w n e = do
         print (ninjaInfoSort unsortedjourney)
 
 
+countryRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
+countryRound f l w n e = do
+
+        putStr "Enter the first country code: "
+        country1 <- getLine
+        putStr "Enter the second country code: "
+        country2 <- getLine
+        if (country1 `elem` ["f","l","w","n","e"]) && (country2 `elem` ["f","l","w","n","e"]) then do
+                        if country1 == country2 then do
+                                        putStrLn "Please select two distinct countries."
+                                        countryRound f l w n e
+                                        else do
+                                                let sortedCountry1 = ninjaInfoSort (head (convertCountry country1 f l w n e))
+                                                let sortedCountry2 = ninjaInfoSort (head (convertCountry country2 f l w n e))
+
+                                                let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) ([head sortedCountry1] ++ [head sortedCountry2])
+                                                let uplist1 = updateNinja listDelete (winner !! 1) f l w n e                                                                                                              
+                                                let uplist2 = updateNinja listUpdate (winner !! 0) (head (head uplist1)) ((head uplist1) !! 1) ((head uplist1) !! 2) ((head uplist1) !! 3) ((head uplist1) !! 4)
+
+                                                print (filter(\ninja -> (name ninja) == (name (head winner))) (head (convertCountry [(country (head winner))] (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4))))
+
+                                                showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
+                        else do
+                                putStrLn "Please select an existing country."
+                                countryRound f l w n e
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 showUIList state f l w n e = do 
         
@@ -213,7 +245,7 @@ showUIList state f l w n e = do
                 "a" -> countryNinjaInfo f l w n e 
                 "b" -> allNinjaInfo f l w n e
                 "c" -> ninjaRound f l w n e
-                --"d" -> return--CountryRound
+                "d" -> countryRound f l w n e
                 "e" -> journeymanList f l w n e
                 _   -> showUIList False f l w n e
 
