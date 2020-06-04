@@ -149,7 +149,7 @@ listUpdate updatedNinja c = updatedList
         where
                 placeholder = filter (\ninja -> ninja /= updatedNinja) c
                 
-                stat = if (r updatedNinja) < 3 then "Junior" else "Journeyman"
+                stat = if (r updatedNinja) < 2 then "Junior" else "Journeyman"
                 updatedList = placeholder ++ [
                         Ninja {name = (name updatedNinja), country = (country updatedNinja), status = stat,
                                         exam1 = (exam1 updatedNinja), exam2 = (exam2 updatedNinja), 
@@ -159,7 +159,7 @@ listUpdate updatedNinja c = updatedList
 
 combiningNinjasforUpdate :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
 combiningNinjasforUpdate nin f l w n e = case (country nin) of
-        'f' -> return ((listUpdate nin f):l:w:n:e:[])
+        'f' -> return [(listUpdate nin f),l,w,n,e]
         'l' -> return [f,(listUpdate nin l),w,n,e]
         'w' -> return [f,l,(listUpdate nin w),n,e]
         'n' -> return [f,l,w,(listUpdate nin n),e]
@@ -168,7 +168,7 @@ combiningNinjasforUpdate nin f l w n e = case (country nin) of
 
 combiningNinjasforDelete :: Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
 combiningNinjasforDelete nin f l w n e = case (country nin) of
-        'f' -> return ((listDelete nin f):l:w:n:e:[])
+        'f' -> return [(listDelete nin f),l,w,n,e]
         'l' -> return [f,(listDelete nin l),w,n,e]
         'w' -> return [f,l,(listDelete nin w),n,e]
         'n' -> return [f,l,w,(listDelete nin n),e]
@@ -197,11 +197,15 @@ ninjaRound f l w n e = do
                                                 ninjaRound f l w n e
                                                 else do
                                                         putStr "Winner: "
-                                                        let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)
-                                                        print (head winner)   
+                                                        let winner = sortBy(\n1 n2 -> compare (score n2) (score n1)) (ninja1 ++ ninja2)   
                                                         let uplist1 = combiningNinjasforDelete (winner !! 1) f l w n e                                                                                                              
                                                         let uplist2 = combiningNinjasforUpdate (winner !! 0) (head (head uplist1)) ((head uplist1) !! 1) ((head uplist1) !! 2) ((head uplist1) !! 3) ((head uplist1) !! 4)
+                                                        
+                                                        print (filter(\ninja -> (name ninja) == (name (head winner))) (head (convertCountry [(country (head winner))] (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4))))
+
                                                         showUIList True (head (head uplist2)) ((head uplist2) !! 1) ((head uplist2) !! 2) ((head uplist2) !! 3) ((head uplist2) !! 4)
+
+
 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -215,7 +219,7 @@ showUIList state f l w n e = do
                 "b" -> allNinjaInfo f l w n e
                 "c" -> ninjaRound f l w n e
                 --"d" -> return--CountryRound
-                --"e" -> listofjourneyman f l w n e -- fill the func
+                --"e" -> JourneymanList f l w n e -- fill the func
                 _   -> showUIList False f l w n e
 
 
@@ -225,7 +229,7 @@ main = do
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
-        let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
+        let [earth, fire, lightning, water, wind] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
         showUIList True fire lightning wind water earth
         --let sasuke =  filter (\ninja -> name ninja =="Sasuke") all_ninjas
         --print sasuke
