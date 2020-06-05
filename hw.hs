@@ -118,28 +118,28 @@ ninjaInfoSort array = sortBy (\n1 n2 -> compare (r n1) (r n2)) $ sortBy (\n1 n2 
 -- over the related country list.
 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-countryNinjaInfo f l w n e = do
-        countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "w", "n"]
-        print $ ninjaInfoSort $ convertCountry countryCode f l w n e
-        showUIList True f l w n e
+countryNinjaInfo e f l n w = do
+        countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
+        print $ ninjaInfoSort $ convertCountry countryCode e f l n w
+        showUIList True e f l n w
 
 
 allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-allNinjaInfo f l w n e = do
-        let allCountries = f ++ l ++ w ++ n ++ e
+allNinjaInfo e f l n w = do
+        let allCountries = e ++ f ++ l ++ n ++ w
         print (ninjaInfoSort allCountries)
-        showUIList True f l w n e
+        showUIList True e f l n w
 
 
 
 convertCountry ::  String -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
-convertCountry countryCode f l w n e  = 
+convertCountry countryCode e f l n w  = 
         case countryCode of
-        "f" -> f
-        "l" -> l
-        "w" -> w
-        "n" -> n
-        "e" -> e
+        "e" -> e 
+        "f" -> f 
+        "l" -> l 
+        "n" -> n 
+        "w" -> w 
         _ -> error " "
 
 
@@ -160,24 +160,24 @@ listUpdate updatedNinja c = updatedList
                 
 
 updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
-updateNinja func nin f l w n e = case (country nin) of
-        'f' -> return [(func nin f),l,w,n,e]
-        'l' -> return [f,(func nin l),w,n,e]
-        'w' -> return [f,l,(func nin w),n,e]
-        'n' -> return [f,l,w,(func nin n),e]
-        'e' -> return [f,l,w,n,(func nin e)]
+updateNinja func nin e f l n w = case (country nin) of
+        'e' -> return [(func nin e),f,l,n,w]
+        'f' -> return [e,(func nin f),l,n,w]
+        'l' -> return [e,f,(func nin l),n,w]
+        'n' -> return [e,f,l,(func nin n),w]
+        'w' -> return [e,f,l,n,(func nin w)]
         _   -> error ""
 
 
 getithNinja :: Int -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO Ninja
-getithNinja i f l w n e = do
+getithNinja i e f l n w = do
         let ordinalString = if i == 1 then "first" else "second"
         name_ <- input ("Enter the name of the " ++ ordinalString ++ " ninja: ")
-        country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["f","l","w","n","e"]
-        let ninja = filter (\ninja -> (name ninja) == name_) (convertCountry country f l w n e)
+        country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["e","f","l","n","w"]
+        let ninja = filter (\ninja -> (name ninja) == name_) (convertCountry country e f l n w)
         if null ninja then do
                 putStrLn "Please enter a valid name-country pair."
-                getithNinja i f l w n e
+                getithNinja i e f l n w
         else
                 return $ head ninja
 
@@ -186,65 +186,65 @@ getithNinja i f l w n e = do
 -- be added to the winner’s score.
 
 makeARound :: Ninja -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO ()
-makeARound ninja1 ninja2 f l w n e = do
+makeARound ninja1 ninja2 e f l n w = do
         let [looser, winner] = sortBy(\n1 n2 -> compare (score n1) (score n2)) [ninja1, ninja2]
         putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
-        let [[f', l', w', n', e']] = updateNinja listDelete (looser) f l w n e                                                                                                              
-        let [[f'', l'', w'', n'', e'']] = updateNinja listUpdate (winner) f' l' w' n' e'
+        let [[e', f', l', n', w']] = updateNinja listDelete (looser) e f l n w                                                                                                              
+        let [[e'', f'', l'', n'', w'']] = updateNinja listUpdate (winner) e' f' l' n' w'
 
         -- his/her position in the country list will also change according to the rules described 
         -- in View a Country’sNinja Information,
 
-        showUIList True f'' l'' w'' n'' e''
+        showUIList True e'' f'' l'' n'' w''
 
 
 ninjaRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-ninjaRound f l w n e = do
+ninjaRound e f l n w = do
 
         -- Each country will promote only 1 ninja to journeyman. Therefore, if this country has already 1
         -- promoted ninja, then a warning will be given to the user and any ninja from this country cannot be
         -- included to the fights anymore even if they are not disqualified. You can use a Boolean flag for each
         -- country in order to give this warning.
 
-        ninja1 <- getithNinja 1 f l w n e
-        ninja2 <- getithNinja 2 f l w n e
-        makeARound ninja1 ninja2 f l w n e
+        ninja1 <- getithNinja 1 e f l n w
+        ninja2 <- getithNinja 2 e f l n w
+        makeARound ninja1 ninja2 e f l n w
         
 
 journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-journeymanList f l w n e = do
+journeymanList e f l n w = do
         let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (f++l++w++n++e)
         print (ninjaInfoSort unsortedjourney)
 
 
 countryRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-countryRound f l w n e = do
-        country1 <- inputUntilValid "Enter the first country code: " ["f","l","w","n","e"]
-        country2 <- inputUntilValid "Enter the second country code: " ["f","l","w","n","e"]
+countryRound e f l n w = do
+        country1 <- inputUntilValid "Enter the first country code: " ["e","f","l","n","w"]
+        country2 <- inputUntilValid "Enter the second country code: " ["e","f","l","n","w"]
         if country1 == country2 then do
                 putStrLn "Please select two distinct countries."
-                countryRound f l w n e
+                countryRound e f l n w
         else do
                 -- Then, the first ninjas of each country list will make a round.
-                let ninja1 = head $ ninjaInfoSort (convertCountry country1 f l w n e)
-                let ninja2 = head $ ninjaInfoSort (convertCountry country2 f l w n e)
-                makeARound ninja1 ninja2 f l w n e
+                let ninja1 = head $ ninjaInfoSort (convertCountry country1 e f l n w)
+                let ninja2 = head $ ninjaInfoSort (convertCountry country2 e f l n w)
+                makeARound ninja1 ninja2 e f l n w
                 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-showUIList state f l w n e = do 
+showUIList state e f l n w = do 
         
         action <- prompt state
         
         let lowered_action = map toLower action
         case lowered_action of
-                "a" -> countryNinjaInfo f l w n e 
-                "b" -> allNinjaInfo f l w n e
-                "c" -> ninjaRound f l w n e
-                "d" -> countryRound f l w n e
-                "e" -> journeymanList f l w n e
-                _   -> showUIList False f l w n e
+                "a" -> countryNinjaInfo e f l n w
+                "b" -> allNinjaInfo e f l n w
+                "c" -> ninjaRound e f l n w
+                "d" -> countryRound e f l n w
+                "e" -> journeymanList e f l n w
+                _   -> showUIList False e f l n w
 
 
 main :: IO ()
@@ -253,8 +253,8 @@ main = do
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
-        let [earth, fire, lightning, water, wind] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
-        showUIList True fire lightning wind water earth
+        let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
+        showUIList True earth fire lightning wind water
         
 
         
