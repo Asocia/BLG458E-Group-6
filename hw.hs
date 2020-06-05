@@ -109,8 +109,13 @@ inputUntilValid prompt validInputs = do
 
 ninjaInfoSort :: [Ninja] -> [Ninja]
 ninjaInfoSort array = sortBy (\n1 n2 -> compare (r n1) (r n2)) $ sortBy (\n1 n2 -> compare (score n2) (score n1)) array
-                                
+              
 
+
+-- Actually, the ordering of the ninjas in their country list will be also the same, meaning that making 
+-- some rounds will affect the ordering of the ninjas in the country lists. Therefore, you will not need 
+-- to reorder the ninjas in the country list for the purpose of viewing the ninjas. You will just iterate
+-- over the related country list.
 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo f l w n e = do
@@ -176,19 +181,32 @@ getithNinja i f l w n e = do
         else
                 return $ head ninja
 
+-- If both of them have the same score, the one with the higher Ability1 + Ability2
+-- score will pass. If again the scores are equal, 1 of them will pass the round randomly. 10 points will
+-- be added to the winner’s score.
 
 makeARound :: Ninja -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO ()
 makeARound ninja1 ninja2 f l w n e = do
         let [looser, winner] = sortBy(\n1 n2 -> compare (score n1) (score n2)) [ninja1, ninja2]
-        putStrLn $ "Winner: " ++ show winner
+        putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
         let [[f', l', w', n', e']] = updateNinja listDelete (looser) f l w n e                                                                                                              
         let [[f'', l'', w'', n'', e'']] = updateNinja listUpdate (winner) f' l' w' n' e'
+
+        -- his/her position in the country list will also change according to the rules described 
+        -- in View a Country’sNinja Information,
+
         showUIList True f'' l'' w'' n'' e''
 
 
 ninjaRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 ninjaRound f l w n e = do
+
+        -- Each country will promote only 1 ninja to journeyman. Therefore, if this country has already 1
+        -- promoted ninja, then a warning will be given to the user and any ninja from this country cannot be
+        -- included to the fights anymore even if they are not disqualified. You can use a Boolean flag for each
+        -- country in order to give this warning.
+
         ninja1 <- getithNinja 1 f l w n e
         ninja2 <- getithNinja 2 f l w n e
         makeARound ninja1 ninja2 f l w n e
@@ -208,7 +226,7 @@ countryRound f l w n e = do
                 putStrLn "Please select two distinct countries."
                 countryRound f l w n e
         else do
-        
+                -- Then, the first ninjas of each country list will make a round.
                 let ninja1 = head $ ninjaInfoSort (convertCountry country1 f l w n e)
                 let ninja2 = head $ ninjaInfoSort (convertCountry country2 f l w n e)
                 makeARound ninja1 ninja2 f l w n e
