@@ -3,7 +3,7 @@ import Data.Char
 import System.IO
 import System.Environment (getArgs)
 import Data.Typeable
-
+import Control.Monad
 
 
 
@@ -73,18 +73,17 @@ readNinjas file ninjas = do
         else do
                 return ninjas
      
-prompt :: Bool -> IO String
-prompt valid = do
-        putStrLn "a) View a Country's Ninja Information"
-        putStrLn "b) View All Countries' Ninja Information"
-        putStrLn "c) Make a Round Between Ninjas"
-        putStrLn "d) Make a Round Between Countries"
-        putStrLn "e) Exit"
+getAction :: Bool -> IO String
+getAction show_help = do
+        when show_help (
+                putStrLn "a) View a Country's Ninja Information\n\
+                         \b) View All Countries' Ninja Information\n\
+                         \c) Make a Round Between Ninjas\n\
+                         \d) Make a Round Between Countries\n\
+                         \e) Exit\n")
+
         hSetBuffering stdout NoBuffering
-        if valid then do 
-                putStr "Enter the action: "
-        else 
-                putStr "Action is not on the list. Please enter a valid action: "
+        putStr "Enter the action: "
         action <- getLine
         return action
 
@@ -121,14 +120,14 @@ countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo e f l n w = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
         mapM_ print $ ninjaInfoSort $ convertCountry countryCode e f l n w
-        showUIList True e f l n w
+        showUIList False e f l n w
 
 
 allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 allNinjaInfo e f l n w = do
         let allCountries = e ++ f ++ l ++ n ++ w
         mapM_ print (ninjaInfoSort allCountries)
-        showUIList True e f l n w
+        showUIList False e f l n w
 
 
 
@@ -196,7 +195,7 @@ makeARound ninja1 ninja2 e f l n w = do
         -- his/her position in the country list will also change according to the rules described 
         -- in View a Country’sNinja Information,
 
-        showUIList True e'' f'' l'' n'' w''
+        showUIList False e'' f'' l'' n'' w''
 
 
 ninjaRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -233,9 +232,9 @@ countryRound e f l n w = do
                 
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-showUIList state e f l n w = do 
+showUIList show_help e f l n w = do 
         
-        action <- prompt state
+        action <- getAction show_help
         let lowered_action = map toLower action
         case lowered_action of
                 "a" -> countryNinjaInfo e f l n w
@@ -243,7 +242,9 @@ showUIList state e f l n w = do
                 "c" -> ninjaRound e f l n w
                 "d" -> countryRound e f l n w
                 "e" -> journeymanList e f l n w
-                _   -> showUIList False e f l n w
+                _   ->  do 
+                        putStrLn "Action is not on the list. Try again."
+                        showUIList True e f l n w
 
 
 main :: IO ()
