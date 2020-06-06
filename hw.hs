@@ -16,11 +16,14 @@ data Ninja = Ninja {name :: String,
                     ability2 :: String,
                     r :: Int,
                     score :: Float}
-                    deriving (Ord, Eq)
+                    deriving (Eq)
 
 instance Show Ninja where
         show (Ninja name _ status _ _ _ _ round score ) = name ++ ", Score: " ++ show score ++ ", Status: "
          ++ status ++ ", Round: " ++ show round
+
+instance Ord Ninja where
+        compare (Ninja _ _ _ _ _ _ _ r1 s1) (Ninja _ _ _ _ _ _ _ r2 s2) = if r1 == r2 then compare s2 s1 else compare r1 r2
 
 
 abilityScore :: String -> Float
@@ -104,11 +107,7 @@ inputUntilValid prompt validInputs = do
                 inputUntilValid prompt validInputs
         else
                 return lowered_result
-
-
-ninjaInfoSort :: [Ninja] -> [Ninja]
-ninjaInfoSort array = sortBy (\n1 n2 -> compare (r n1) (r n2)) $ sortBy (\n1 n2 -> compare (score n2) (score n1)) array
-              
+            
 
 
 -- Actually, the ordering of the ninjas in their country list will be also the same, meaning that making 
@@ -119,14 +118,14 @@ ninjaInfoSort array = sortBy (\n1 n2 -> compare (r n1) (r n2)) $ sortBy (\n1 n2 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo e f l n w = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
-        mapM_ print $ ninjaInfoSort $ convertCountry countryCode e f l n w
+        mapM_ print $ sort $ convertCountry countryCode e f l n w
         showUIList False e f l n w
 
 
 allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 allNinjaInfo e f l n w = do
         let allCountries = e ++ f ++ l ++ n ++ w
-        mapM_ print (ninjaInfoSort allCountries)
+        mapM_ print (sort allCountries)
         showUIList False e f l n w
 
 
@@ -221,7 +220,7 @@ ninjaRound e f l n w = do
 journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 journeymanList e f l n w = do
         let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (f++l++w++n++e)
-        print (ninjaInfoSort unsortedjourney)
+        print (sort unsortedjourney)
 
 
 countryRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -236,8 +235,8 @@ countryRound e f l n w = do
                 countryRound e f l n w
         else do
                 -- Then, the first ninjas of each country list will make a round.
-                let ninja1 = head $ ninjaInfoSort (convertCountry country1 e f l n w)
-                let ninja2 = head $ ninjaInfoSort (convertCountry country2 e f l n w)
+                let ninja1 = head $ sort (convertCountry country1 e f l n w)
+                let ninja2 = head $ sort (convertCountry country2 e f l n w)
                 makeARound ninja1 ninja2 e f l n w
                 
 
