@@ -26,70 +26,6 @@ instance Ord Ninja where
         compare (Ninja _ _ _ _ _ _ _ r1 s1) (Ninja _ _ _ _ _ _ _ r2 s2) = if r1 == r2 then compare s2 s1 else compare r1 r2
 
 
-abilityScore :: String -> Float
-abilityScore ability = case ability of 
-                "Clone"     -> 20
-                "Hit"       -> 10
-                "Lightning" -> 50
-                "Vision"    -> 30
-                "Sand"      -> 50
-                "Fire"      -> 40
-                "Water"     -> 30
-                "Blade"     -> 20
-                "Summon"    -> 50
-                "Storm"     -> 10
-                "Rock"      -> 20
-                _           -> error "No such ability"
-
-
-calculateScore :: Float -> Float -> String -> String -> Float
-calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
-    where 
-        abi1 = abilityScore a1
-        abi2 = abilityScore a2
-
-
-initNinja :: [String] -> Float -> Float -> Ninja
-initNinja params s1 s2 = Ninja (params !! 0) countryChar "Junior" s1 s2 (params !! 4) (params !! 5) 0 scr
-    where
-        scr = calculateScore s1 s2  (params !! 4) (params !! 5)
-        countryChar = case (params !! 1) of
-                "Fire"      -> 'f'
-                "Lightning" -> 'l'
-                "Water"     -> 'w'
-                "Wind"      -> 'n'
-                "Earth"     -> 'e'
-                _           -> error "No such country"  -- maybe display the country here?
-                
-
-
-readNinjas :: Handle -> [Ninja] ->  IO [Ninja]
-readNinjas file ninjas = do
-        end <- hIsEOF file
-        if not end then do
-                line <- hGetLine file
-                let params = words line 
-                let score1 = read(params !! 2) :: Float
-                let score2 = read(params !! 3) :: Float 
-                let ninja = initNinja params score1 score2
-                readNinjas file (ninja:ninjas)
-        else do
-                return ninjas
-     
-getAction :: Bool -> IO String
-getAction show_help = do
-        when show_help (
-                putStrLn "a) View a Country's Ninja Information\n\
-                         \b) View All Countries' Ninja Information\n\
-                         \c) Make a Round Between Ninjas\n\
-                         \d) Make a Round Between Countries\n\
-                         \e) Exit\n")
-
-        hSetBuffering stdout NoBuffering
-        putStr "Enter the action: "
-        action <- getLine
-        return action
-
 
 input :: String -> IO String
 input prompt = do
@@ -107,27 +43,6 @@ inputUntilValid prompt validInputs = do
                 inputUntilValid prompt validInputs
         else
                 return lowered_result
-            
-
-
--- Actually, the ordering of the ninjas in their country list will be also the same, meaning that making 
--- some rounds will affect the ordering of the ninjas in the country lists. Therefore, you will not need 
--- to reorder the ninjas in the country list for the purpose of viewing the ninjas. You will just iterate
--- over the related country list.
-
-countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-countryNinjaInfo e f l n w = do
-        countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
-        mapM_ print $ sort $ convertCountry countryCode e f l n w
-        showUIList False e f l n w
-
-
-allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-allNinjaInfo e f l n w = do
-        let allCountries = e ++ f ++ l ++ n ++ w
-        mapM_ print (sort allCountries)
-        showUIList False e f l n w
-
 
 
 convertCountry ::  String -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja]
@@ -139,7 +54,19 @@ convertCountry countryCode e f l n w  =
         "n" -> n 
         "w" -> w 
         _ -> error " "
+                
 
+getithNinja :: Int -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO Ninja
+getithNinja i e f l n w = do
+        let ordinalString = if i == 1 then "first" else "second"
+        name_ <- input ("Enter the name of the " ++ ordinalString ++ " ninja: ")
+        country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["e","f","l","n","w"]
+        let ninja = filter (\ninja -> (name ninja) == name_) (convertCountry country e f l n w)
+        if null ninja then do
+                putStrLn "Please enter a valid name-country pair."
+                getithNinja i e f l n w
+        else
+                return $ head ninja
 
 listDelete :: Ninja -> [Ninja] -> [Ninja]
 listDelete deletedNinja = filter (\ninja -> ninja /= deletedNinja)
@@ -166,19 +93,6 @@ updateNinja func nin e f l n w = case (country nin) of
         'w' -> return [e,f,l,n,(func nin w)]
         _   -> error ""
 
-
-getithNinja :: Int -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO Ninja
-getithNinja i e f l n w = do
-        let ordinalString = if i == 1 then "first" else "second"
-        name_ <- input ("Enter the name of the " ++ ordinalString ++ " ninja: ")
-        country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["e","f","l","n","w"]
-        let ninja = filter (\ninja -> (name ninja) == name_) (convertCountry country e f l n w)
-        if null ninja then do
-                putStrLn "Please enter a valid name-country pair."
-                getithNinja i e f l n w
-        else
-                return $ head ninja
-
 -- If both of them have the same score, the one with the higher Ability1 + Ability2
 -- score will pass. If again the scores are equal, 1 of them will pass the round randomly. 10 points will
 -- be added to the winner’s score.
@@ -195,6 +109,25 @@ makeARound ninja1 ninja2 e f l n w = do
         -- in View a Country’sNinja Information,
 
         showUIList False e'' f'' l'' n'' w''
+
+-- Actually, the ordering of the ninjas in their country list will be also the same, meaning that making 
+-- some rounds will affect the ordering of the ninjas in the country lists. Therefore, you will not need 
+-- to reorder the ninjas in the country list for the purpose of viewing the ninjas. You will just iterate
+-- over the related country list.
+
+countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
+countryNinjaInfo e f l n w = do
+        countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
+        mapM_ print $ sort $ convertCountry countryCode e f l n w
+        showUIList False e f l n w
+
+
+allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
+allNinjaInfo e f l n w = do
+        let allCountries = e ++ f ++ l ++ n ++ w
+        mapM_ print (sort allCountries)
+        showUIList False e f l n w
+
 
 
 ninjaRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -217,12 +150,6 @@ ninjaRound e f l n w = do
                 makeARound ninja1 ninja2 e f l n w
         
 
-journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
-journeymanList e f l n w = do
-        let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (f++l++w++n++e)
-        print (sort unsortedjourney)
-
-
 countryRound :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryRound e f l n w = do
         country1 <- inputUntilValid "Enter the first country code: " ["e","f","l","n","w"]
@@ -238,7 +165,26 @@ countryRound e f l n w = do
                 let ninja1 = head $ sort (convertCountry country1 e f l n w)
                 let ninja2 = head $ sort (convertCountry country2 e f l n w)
                 makeARound ninja1 ninja2 e f l n w
+
+journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
+journeymanList e f l n w = do
+        let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (f++l++w++n++e)
+        print (sort unsortedjourney)
                 
+getAction :: Bool -> IO String
+getAction show_help = do
+        when show_help (
+                putStrLn "a) View a Country's Ninja Information\n\
+                         \b) View All Countries' Ninja Information\n\
+                         \c) Make a Round Between Ninjas\n\
+                         \d) Make a Round Between Countries\n\
+                         \e) Exit\n")
+
+        hSetBuffering stdout NoBuffering
+        putStr "Enter the action: "
+        action <- getLine
+        return action
+
 
 showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 showUIList show_help e f l n w = do 
@@ -256,14 +202,62 @@ showUIList show_help e f l n w = do
                         showUIList True e f l n w
 
 
+abilityScore :: String -> Float
+abilityScore ability = case ability of 
+                "Clone"     -> 20
+                "Hit"       -> 10
+                "Lightning" -> 50
+                "Vision"    -> 30
+                "Sand"      -> 50
+                "Fire"      -> 40
+                "Water"     -> 30
+                "Blade"     -> 20
+                "Summon"    -> 50
+                "Storm"     -> 10
+                "Rock"      -> 20
+                _           -> error $ "No such ability: " ++ ability
+
+calculateScore :: Float -> Float -> String -> String -> Float
+calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
+        where 
+                abi1 = abilityScore a1
+                abi2 = abilityScore a2
+
+
+initNinja :: [String] -> Float -> Float -> Ninja
+initNinja params s1 s2 = Ninja (params !! 0) countryChar "Junior" s1 s2 (params !! 4) (params !! 5) 0 score
+        where
+                score = calculateScore s1 s2  (params !! 4) (params !! 5)
+                countryChar = case (params !! 1) of
+                        "Fire"      -> 'f'
+                        "Lightning" -> 'l'
+                        "Water"     -> 'w'
+                        "Wind"      -> 'n'
+                        "Earth"     -> 'e'
+                        _           -> error $ "No such country: " ++  (params !! 1)
+
+
+readNinjas :: Handle -> [Ninja] ->  IO [Ninja]
+readNinjas file ninjas = do
+        end <- hIsEOF file
+        if not end then do
+                line <- hGetLine file
+                let params = words line 
+                let score1 = read(params !! 2) :: Float
+                let score2 = read(params !! 3) :: Float 
+                let ninja = initNinja params score1 score2
+                readNinjas file (ninja:ninjas)
+        else do
+                return ninjas
+
 main :: IO ()
 main = do
         args <- getArgs 
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
+        -- maybe we can strictly evaluate here to catch the errors early.
+        -- such as invalid country names or abilities.
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
         showUIList True earth fire lightning wind water
-        
-
         
