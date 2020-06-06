@@ -84,13 +84,13 @@ update updated li = updatedList
                 updatedList = add toBeAdded listWithoutUpdated
                 
 
-updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
+updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[Ninja]]
 updateNinja func nin e f l n w = case (country nin) of
-        'e' -> return [(func nin e),f,l,n,w]
-        'f' -> return [e,(func nin f),l,n,w]
-        'l' -> return [e,f,(func nin l),n,w]
-        'n' -> return [e,f,l,(func nin n),w]
-        'w' -> return [e,f,l,n,(func nin w)]
+        'e' -> [(func nin e),f,l,n,w]
+        'f' -> [e,(func nin f),l,n,w]
+        'l' -> [e,f,(func nin l),n,w]
+        'n' -> [e,f,l,(func nin n),w]
+        'w' -> [e,f,l,n,(func nin w)]
         _   -> error ""
 
 fight :: Ninja -> Ninja -> (Ninja, Ninja)
@@ -104,8 +104,8 @@ makeARound ninja1 ninja2 e f l n w = do
         let (looser, winner) = fight ninja1 ninja2
         putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
-        let [[e', f', l', n', w']] = updateNinja remove (looser) e f l n w                                                                                                              
-        let [[e'', f'', l'', n'', w'']] = updateNinja update (winner) e' f' l' n' w'
+        let [e', f', l', n', w'] = updateNinja remove (looser) e f l n w                                                                                                              
+        let [e'', f'', l'', n'', w''] = updateNinja update (winner) e' f' l' n' w'
 
         showUIList False e'' f'' l'' n'' w''
 
