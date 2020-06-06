@@ -68,20 +68,20 @@ getithNinja i e f l n w = do
         else
                 return $ head ninja
 
-listDelete :: Ninja -> [Ninja] -> [Ninja]
-listDelete deletedNinja = filter (\ninja -> ninja /= deletedNinja)
+remove :: Ninja -> [Ninja] -> [Ninja]
+remove removed = filter (/= removed)
 
+add :: Ninja -> [Ninja] -> [Ninja]
+add added []     = [added]
+add added all@(n:ns) = if added < n then added:all else n: add added ns
                 
-listUpdate :: Ninja -> [Ninja] -> [Ninja]
-listUpdate updatedNinja c = updatedList
+update :: Ninja -> [Ninja] -> [Ninja]
+update updated li = updatedList
         where
-                placeholder = filter (\ninja -> ninja /= updatedNinja) c
-                stat = if (r updatedNinja) < 2 then "Junior" else "Journeyman"
-                updatedList = placeholder ++ [
-                        Ninja {name = (name updatedNinja), country = (country updatedNinja), status = stat,
-                                        exam1 = (exam1 updatedNinja), exam2 = (exam2 updatedNinja), 
-                                        ability1 = (ability1 updatedNinja), ability2 = (ability2 updatedNinja), 
-                                        r = (r updatedNinja)+1, score = (score updatedNinja)+10 }]
+                listWithoutUpdated = remove updated li
+                status = if (r updated) < 2 then "Junior" else "Journeyman"
+                toBeAdded = updated {status = status, r = succ (r updated), score = (score updated)+10 }
+                updatedList = add toBeAdded listWithoutUpdated
                 
 
 updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [[[Ninja]]]
@@ -102,23 +102,15 @@ makeARound ninja1 ninja2 e f l n w = do
         let [looser, winner] = sortBy(\n1 n2 -> compare (score n1) (score n2)) [ninja1, ninja2]
         putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
-        let [[e', f', l', n', w']] = updateNinja listDelete (looser) e f l n w                                                                                                              
-        let [[e'', f'', l'', n'', w'']] = updateNinja listUpdate (winner) e' f' l' n' w'
-
-        -- his/her position in the country list will also change according to the rules described 
-        -- in View a Country’sNinja Information,
+        let [[e', f', l', n', w']] = updateNinja remove (looser) e f l n w                                                                                                              
+        let [[e'', f'', l'', n'', w'']] = updateNinja update (winner) e' f' l' n' w'
 
         showUIList False e'' f'' l'' n'' w''
-
--- Actually, the ordering of the ninjas in their country list will be also the same, meaning that making 
--- some rounds will affect the ordering of the ninjas in the country lists. Therefore, you will not need 
--- to reorder the ninjas in the country list for the purpose of viewing the ninjas. You will just iterate
--- over the related country list.
 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo e f l n w = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
-        mapM_ print $ sort $ convertCountry countryCode e f l n w
+        mapM_ print $ convertCountry countryCode e f l n w
         showUIList False e f l n w
 
 
@@ -161,9 +153,9 @@ countryRound e f l n w = do
                         putStrLn "Please select two distinct countries."
                 countryRound e f l n w
         else do
-                -- Then, the first ninjas of each country list will make a round.
-                let ninja1 = head $ sort (convertCountry country1 e f l n w)
-                let ninja2 = head $ sort (convertCountry country2 e f l n w)
+                -- check if empty
+                let ninja1 = head $ (convertCountry country1 e f l n w)
+                let ninja2 = head $ (convertCountry country2 e f l n w)
                 makeARound ninja1 ninja2 e f l n w
 
 journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -255,7 +247,7 @@ main = do
         args <- getArgs 
         file <- openFile (head args) ReadMode
         all_ninjas <- readNinjas file []
-        -- maybe we can strictly evaluate here to catch the errors early.
+        -- maybe we can strictly evaluate here to catch the errors early
         -- such as invalid country names or abilities.
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
