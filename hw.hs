@@ -208,7 +208,14 @@ ninjaRound e f l n w = do
 
         ninja1 <- getithNinja 1 e f l n w
         ninja2 <- getithNinja 2 e f l n w
-        makeARound ninja1 ninja2 e f l n w
+        if country ninja1 == country ninja2 then do
+                if ninja1 == ninja2 then do
+                        putStrLn $ name ninja1 ++ " refuses to punch itself. Try again."
+                else do
+                        putStrLn "Please select ninjas from different countries."
+                ninjaRound e f l n w
+        else do
+                makeARound ninja1 ninja2 e f l n w
         
 
 journeymanList :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
@@ -222,7 +229,10 @@ countryRound e f l n w = do
         country1 <- inputUntilValid "Enter the first country code: " ["e","f","l","n","w"]
         country2 <- inputUntilValid "Enter the second country code: " ["e","f","l","n","w"]
         if country1 == country2 then do
-                putStrLn "Please select two distinct countries."
+                if country1 == "f" then do
+                        putStrLn "You can't fight fire with fire :)"
+                else
+                        putStrLn "Please select two distinct countries."
                 countryRound e f l n w
         else do
                 -- Then, the first ninjas of each country list will make a round.
