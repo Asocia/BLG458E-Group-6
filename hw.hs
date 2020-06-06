@@ -19,8 +19,8 @@ data Ninja = Ninja {name :: String,
                     deriving (Ord, Eq)
 
 instance Show Ninja where
-        show (Ninja name _ status _ _ _ _ round score ) = show name ++ ", Score: " ++ show score ++ ", Status: "
-         ++ show status ++ ", Round: " ++ show round ++ "\n"
+        show (Ninja name _ status _ _ _ _ round score ) = name ++ ", Score: " ++ show score ++ ", Status: "
+         ++ status ++ ", Round: " ++ show round
 
 
 abilityScore :: String -> Float
@@ -120,14 +120,14 @@ ninjaInfoSort array = sortBy (\n1 n2 -> compare (r n1) (r n2)) $ sortBy (\n1 n2 
 countryNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 countryNinjaInfo e f l n w = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
-        print $ ninjaInfoSort $ convertCountry countryCode e f l n w
+        mapM_ print $ ninjaInfoSort $ convertCountry countryCode e f l n w
         showUIList True e f l n w
 
 
 allNinjaInfo :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO()
 allNinjaInfo e f l n w = do
         let allCountries = e ++ f ++ l ++ n ++ w
-        print (ninjaInfoSort allCountries)
+        mapM_ print (ninjaInfoSort allCountries)
         showUIList True e f l n w
 
 
@@ -236,7 +236,6 @@ showUIList :: Bool -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO(
 showUIList state e f l n w = do 
         
         action <- prompt state
-        
         let lowered_action = map toLower action
         case lowered_action of
                 "a" -> countryNinjaInfo e f l n w
