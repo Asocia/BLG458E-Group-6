@@ -93,13 +93,15 @@ updateNinja func nin e f l n w = case (country nin) of
         'w' -> return [e,f,l,n,(func nin w)]
         _   -> error ""
 
--- If both of them have the same score, the one with the higher Ability1 + Ability2
--- score will pass. If again the scores are equal, 1 of them will pass the round randomly. 10 points will
--- be added to the winner’s score.
+fight :: Ninja -> Ninja -> (Ninja, Ninja)
+fight n1 n2 = if totalScore1 < totalScore2 then (n1, n2) else (n2, n1)
+        where
+                totalScore1 = score n1 + (impact (ability1 n1) + impact (ability2 n1)) * fromIntegral (fromEnum (score n1 == score n2))
+                totalScore2 = score n2 + (impact (ability1 n2) + impact (ability2 n2)) * fromIntegral (fromEnum (score n1 == score n2))
 
 makeARound :: Ninja -> Ninja -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO ()
 makeARound ninja1 ninja2 e f l n w = do
-        let [looser, winner] = sortBy(\n1 n2 -> compare (score n1) (score n2)) [ninja1, ninja2]
+        let (looser, winner) = fight ninja1 ninja2
         putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
         let [[e', f', l', n', w']] = updateNinja remove (looser) e f l n w                                                                                                              
@@ -194,8 +196,8 @@ showUIList show_help e f l n w = do
                         showUIList True e f l n w
 
 
-abilityScore :: String -> Float
-abilityScore ability = case ability of 
+impact :: String -> Float
+impact ability = case ability of 
                 "Clone"     -> 20
                 "Hit"       -> 10
                 "Lightning" -> 50
@@ -212,8 +214,8 @@ abilityScore ability = case ability of
 calculateScore :: Float -> Float -> String -> String -> Float
 calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
         where 
-                abi1 = abilityScore a1
-                abi2 = abilityScore a2
+                abi1 = impact a1
+                abi2 = impact a2
 
 
 initNinja :: [String] -> Float -> Float -> Ninja
@@ -250,6 +252,6 @@ main = do
         -- maybe we can strictly evaluate here to catch the errors early
         -- such as invalid country names or abilities.
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
-        let [earth, fire, lightning, wind, water] = groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas
+        let [earth, fire, lightning, wind, water] = map sort (groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas)
         showUIList True earth fire lightning wind water
         
