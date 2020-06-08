@@ -199,7 +199,7 @@ countryRound ninjas journeymanL = do
 journeymanList :: [[Ninja]] -> [Bool] -> IO()
 journeymanList ninjas journeymanL = do
         let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (foldl (++) [] ninjas)
-        print (sort unsortedjourney)
+        mapM_ print (sort unsortedjourney)
                 
 getAction :: Bool -> IO String
 getAction show_help = do
