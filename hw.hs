@@ -1,9 +1,6 @@
-import Data.List
 import Data.Char
 import System.IO
 import System.Environment (getArgs)
-import Data.Typeable
-import Control.Monad
 
 
 
@@ -44,16 +41,17 @@ inputUntilValid prompt validInputs = do
         else
                 return lowered_result
 
+when :: (Applicative f) => Bool -> f () -> f ()
+when p s  = if p then s else pure ()
 
 getItem ::  String -> [a] -> a
-getItem countryCode [e, f, l, n, w] = 
-        case countryCode of
-        "e" -> e 
-        "f" -> f 
-        "l" -> l 
-        "n" -> n 
-        "w" -> w 
-        _ -> error "No such item"
+getItem countryCode [e, f, l, n, w] = case countryCode of
+         "e" -> e 
+         "f" -> f 
+         "l" -> l 
+         "n" -> n 
+         "w" -> w 
+         _ -> error "No such item"
 
 hasAJourneyman :: String -> [Bool] -> Bool
 hasAJourneyman = getItem
@@ -93,7 +91,7 @@ getithCountrysNinja i ninjas journeymanL = do
                 getithCountrysNinja i ninjas journeymanL
         else
                 if null country then do
-                        putStrLn $ getCountryName countryCode ++ " country is eliminated. Please try another country."
+                        putStrLn $ getCountryName countryCode ++ " country's ninjas are eliminated. Please try another country."
                         getithCountrysNinja i ninjas journeymanL
                 else
                         return $ head country
@@ -155,11 +153,11 @@ countryNinjaInfo ninjas journeymanL = do
         let countryName = getCountryName countryCode
         let country = getCountry countryCode ninjas
         if null country then do
-                putStrLn "This country has no ninja."
+                putStrLn $ countryName ++ " country's ninjas are eliminated."
         else 
                 mapM_ print country
         when (countryHasjourneyman)(
-                putStrLn (countryName ++ " country cannot be included in a fight."))
+                putStrLn $ countryName ++ " country cannot be included in a fight.")
         showUIList False ninjas journeymanL
 
 
@@ -230,22 +228,36 @@ showUIList show_help ninjas hasAJourneyMan = do
                 _   ->  do 
                         putStrLn "Action is not on the list. Try again."
                         showUIList True ninjas hasAJourneyMan
+        
+filterNinjas :: Char -> [Ninja] -> [Ninja]
+filterNinjas countryCode = filter (\ninja -> country ninja == countryCode)
+
+sort :: [Ninja] -> [Ninja]
+sort xs = foldr ins [] xs
+        where 
+                ins :: Ninja -> [Ninja] -> [Ninja]
+                ins n [] = [n]
+                ins n xs@(x':xs')
+                        | n <= x'   = n : xs
+                        | otherwise = x' : ins n xs'
+
+
 
 
 impact :: String -> Float
 impact ability = case ability of 
-                "Clone"     -> 20
-                "Hit"       -> 10
-                "Lightning" -> 50
-                "Vision"    -> 30
-                "Sand"      -> 50
-                "Fire"      -> 40
-                "Water"     -> 30
-                "Blade"     -> 20
-                "Summon"    -> 50
-                "Storm"     -> 10
-                "Rock"      -> 20
-                _           -> error $ "No such ability: " ++ ability
+        "Clone"     -> 20
+        "Hit"       -> 10
+        "Lightning" -> 50
+        "Vision"    -> 30
+        "Sand"      -> 50
+        "Fire"      -> 40
+        "Water"     -> 30
+        "Blade"     -> 20
+        "Summon"    -> 50
+        "Storm"     -> 10
+        "Rock"      -> 20
+        _           -> error $ "No such ability: " ++ ability
 
 calculateScore :: Float -> Float -> String -> String -> Float
 calculateScore e1 e2 a1 a2 =  0.5 * e1 + 0.3 * e2 + abi1 + abi2
@@ -287,8 +299,8 @@ main = do
         all_ninjas <- readNinjas file []
         -- maybe we can strictly evaluate here to catch the errors early
         -- such as invalid country names or abilities.
-        let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
-        let groupedNinjas = map sort (groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas)
+        let groupedNinjas = zipWith filterNinjas ['e', 'f', 'l', 'n', 'w'] (repeat all_ninjas)
+        let sortedNinjas = map sort groupedNinjas
         let hasAJourneyman = [False, False, False, False, False]
-        showUIList True groupedNinjas hasAJourneyman
+        showUIList True sortedNinjas hasAJourneyman
         
