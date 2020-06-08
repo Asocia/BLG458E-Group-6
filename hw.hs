@@ -174,9 +174,7 @@ getAction show_help = do
                          \d) Make a Round Between Countries\n\
                          \e) Exit\n")
 
-        hSetBuffering stdout NoBuffering
-        putStr "Enter the action: "
-        action <- getLine
+        action <- input "Enter the action: "
         return action
 
 
