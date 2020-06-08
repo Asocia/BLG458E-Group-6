@@ -45,15 +45,26 @@ inputUntilValid prompt validInputs = do
                 return lowered_result
 
 
-convertCountry ::  String -> [[Ninja]] -> [Ninja]
-convertCountry countryCode [e, f, l, n, w] = 
+getItem ::  String -> [a] -> a
+getItem countryCode [e, f, l, n, w] = 
         case countryCode of
         "e" -> e 
         "f" -> f 
         "l" -> l 
         "n" -> n 
         "w" -> w 
-        _ -> error " "
+        _ -> error "No such item"
+
+hasAJourneyman :: String -> [Bool] -> Bool
+hasAJourneyman = getItem
+
+getCountry :: String -> [[Ninja]] -> [Ninja]
+getCountry = getItem
+
+getCountryName :: String -> [String] -> String
+getCountryName = getItem
+
+
                 
 
 getithNinja :: Int -> [[Ninja]] -> IO Ninja
@@ -61,7 +72,7 @@ getithNinja i ninjas = do
         let ordinalString = if i == 1 then "first" else "second"
         name_ <- input ("Enter the name of the " ++ ordinalString ++ " ninja: ")
         country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["e","f","l","n","w"]
-        let ninja = filter (\ninja -> (name ninja) == name_) (convertCountry country ninjas)
+        let ninja = filter (\ninja -> (name ninja) == name_) (getCountry country ninjas)
         if null ninja then do
                 putStrLn "Please enter a valid name-country pair."
                 getithNinja i ninjas
@@ -99,33 +110,42 @@ fight n1 n2 = if totalScore1 < totalScore2 then (n1, n2) else (n2, n1)
                 totalScore1 = score n1 + (impact (ability1 n1) + impact (ability2 n1)) * fromIntegral (fromEnum (score n1 == score n2))
                 totalScore2 = score n2 + (impact (ability1 n2) + impact (ability2 n2)) * fromIntegral (fromEnum (score n1 == score n2))
 
-makeARound :: Ninja -> Ninja -> [[Ninja]] -> IO ()
-makeARound ninja1 ninja2 ninjas = do
+makeARound :: Ninja -> Ninja -> [[Ninja]] -> [Bool] -> IO ()
+makeARound ninja1 ninja2 ninjas journeymanL = do
         let (looser, winner) = fight ninja1 ninja2
         putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
 
         let ninjas' = updateNinja remove (looser) ninjas                                                                                                              
         let ninjas'' = updateNinja update (winner) ninjas'
 
-        showUIList False ninjas''
+        showUIList False ninjas'' journeymanL
+        
 
-countryNinjaInfo :: [[Ninja]] -> IO()
-countryNinjaInfo ninjas = do
+countryNinjaInfo :: [[Ninja]] -> [Bool] -> IO()
+countryNinjaInfo ninjas journeymanL = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
-        mapM_ print $ convertCountry countryCode ninjas
-        showUIList False ninjas
+        let countryHasjourneyman = hasAJourneyman countryCode journeymanL
+        let countryName = getCountryName countryCode ["Earth", "Fire", "Lightning", "Wind", "Water"]
+        let country = getCountry countryCode ninjas
+        if null country then do
+                putStrLn "This country has no ninja."
+        else 
+                mapM_ print country
+        when (countryHasjourneyman)(
+                putStrLn (countryName ++ " country cannot be included in a fight."))
+        showUIList False ninjas journeymanL
 
 
-allNinjaInfo :: [[Ninja]] -> IO()
-allNinjaInfo ninjas = do
+allNinjaInfo :: [[Ninja]] -> [Bool] -> IO()
+allNinjaInfo ninjas journeymanL = do
         let allCountries = (foldl (++) [] ninjas)
         mapM_ print (sort allCountries)
-        showUIList False ninjas
+        showUIList False ninjas journeymanL
 
 
 
-ninjaRound :: [[Ninja]] -> IO()
-ninjaRound ninjas = do
+ninjaRound :: [[Ninja]] -> [Bool] -> IO()
+ninjaRound ninjas journeymanL = do
 
         -- Each country will promote only 1 ninja to journeyman. Therefore, if this country has already 1
         -- promoted ninja, then a warning will be given to the user and any ninja from this country cannot be
@@ -139,13 +159,13 @@ ninjaRound ninjas = do
                         putStrLn $ name ninja1 ++ " refuses to punch itself. Try again."
                 else do
                         putStrLn "Please select ninjas from different countries."
-                ninjaRound ninjas
+                ninjaRound ninjas journeymanL
         else do
-                makeARound ninja1 ninja2 ninjas
+                makeARound ninja1 ninja2 ninjas journeymanL
         
 
-countryRound :: [[Ninja]] -> IO()
-countryRound ninjas = do
+countryRound :: [[Ninja]] -> [Bool] -> IO()
+countryRound ninjas journeymanL = do
         country1 <- inputUntilValid "Enter the first country code: " ["e","f","l","n","w"]
         country2 <- inputUntilValid "Enter the second country code: " ["e","f","l","n","w"]
         if country1 == country2 then do
@@ -153,15 +173,15 @@ countryRound ninjas = do
                         putStrLn "You can't fight fire with fire :)"
                 else
                         putStrLn "Please select two distinct countries."
-                countryRound ninjas
+                countryRound ninjas journeymanL
         else do
                 -- check if empty
-                let ninja1 = head $ (convertCountry country1 ninjas)
-                let ninja2 = head $ (convertCountry country2 ninjas)
-                makeARound ninja1 ninja2 ninjas
+                let ninja1 = head $ (getCountry country1 ninjas)
+                let ninja2 = head $ (getCountry country2 ninjas)
+                makeARound ninja1 ninja2 ninjas journeymanL
 
-journeymanList :: [[Ninja]] -> IO()
-journeymanList ninjas = do
+journeymanList :: [[Ninja]] -> [Bool] -> IO()
+journeymanList ninjas journeymanL = do
         let unsortedjourney = filter(\ninja -> (status ninja) == "Journeyman") (foldl (++) [] ninjas)
         print (sort unsortedjourney)
                 
@@ -178,20 +198,20 @@ getAction show_help = do
         return action
 
 
-showUIList :: Bool -> [[Ninja]] -> IO()
-showUIList show_help ninjas = do 
+showUIList :: Bool -> [[Ninja]] -> [Bool] -> IO()
+showUIList show_help ninjas hasAJourneyMan = do 
         
         action <- getAction show_help
         let lowered_action = map toLower action
         case lowered_action of
-                "a" -> countryNinjaInfo ninjas
-                "b" -> allNinjaInfo ninjas
-                "c" -> ninjaRound ninjas
-                "d" -> countryRound ninjas
-                "e" -> journeymanList ninjas
+                "a" -> countryNinjaInfo ninjas  hasAJourneyMan
+                "b" -> allNinjaInfo ninjas hasAJourneyMan
+                "c" -> ninjaRound ninjas hasAJourneyMan
+                "d" -> countryRound ninjas hasAJourneyMan
+                "e" -> journeymanList ninjas hasAJourneyMan
                 _   ->  do 
                         putStrLn "Action is not on the list. Try again."
-                        showUIList True ninjas
+                        showUIList True ninjas hasAJourneyMan
 
 
 impact :: String -> Float
@@ -251,5 +271,6 @@ main = do
         -- such as invalid country names or abilities.
         let sortedNinjas = sortBy (\n1 n2 -> compare (country n1) (country n2)) all_ninjas
         let groupedNinjas = map sort (groupBy (\n1 n2 -> (country n1) == (country n2)) sortedNinjas)
-        showUIList True groupedNinjas
+        let hasAJourneyman = [False, False, False, False, False]
+        showUIList True groupedNinjas hasAJourneyman
         
