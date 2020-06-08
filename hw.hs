@@ -61,23 +61,42 @@ hasAJourneyman = getItem
 getCountry :: String -> [[Ninja]] -> [Ninja]
 getCountry = getItem
 
-getCountryName :: String -> [String] -> String
-getCountryName = getItem
+getCountryName :: String -> String
+getCountryName i = getItem i ["Earth", "Fire", "Lightning", "Wind", "Water"]
 
 
-                
-
-getithNinja :: Int -> [[Ninja]] -> IO Ninja
-getithNinja i ninjas = do
+getithNinja :: Int -> [[Ninja]] -> [Bool] -> IO Ninja
+getithNinja i ninjas journeymanL = do
         let ordinalString = if i == 1 then "first" else "second"
         name_ <- input ("Enter the name of the " ++ ordinalString ++ " ninja: ")
         country <- inputUntilValid  ("Enter the country code of the " ++ ordinalString ++  " ninja: ") ["e","f","l","n","w"]
+        let countryHasJourneyman = hasAJourneyman country journeymanL
         let ninja = filter (\ninja -> (name ninja) == name_) (getCountry country ninjas)
         if null ninja then do
                 putStrLn "Please enter a valid name-country pair."
-                getithNinja i ninjas
+                getithNinja i ninjas journeymanL
         else
-                return $ head ninja
+                if countryHasJourneyman then do
+                        putStrLn $ getCountryName country ++ " country already has a journeyman. Please try another country."
+                        getithNinja i ninjas journeymanL
+                else
+                        return $ head ninja
+
+getithCountrysNinja :: Int -> [[Ninja]] -> [Bool] -> IO Ninja
+getithCountrysNinja i ninjas journeymanL = do
+        let ordinalString = if i == 1 then "first" else "second"
+        countryCode <- inputUntilValid  ("Enter the " ++ ordinalString ++  " country code: ") ["e","f","l","n","w"]
+        let countryHasJourneyman = hasAJourneyman countryCode journeymanL
+        let country = getCountry countryCode ninjas
+        if countryHasJourneyman then do
+                putStrLn $ getCountryName countryCode ++ " country already has a journeyman. Please try another country."
+                getithCountrysNinja i ninjas journeymanL
+        else
+                if null country then do
+                        putStrLn $ getCountryName countryCode ++ " country is eliminated. Please try another country."
+                        getithCountrysNinja i ninjas journeymanL
+                else
+                        return $ head country
 
 remove :: Ninja -> [Ninja] -> [Ninja]
 remove removed = filter (/= removed)
@@ -133,7 +152,7 @@ countryNinjaInfo :: [[Ninja]] -> [Bool] -> IO()
 countryNinjaInfo ninjas journeymanL = do
         countryCode <- inputUntilValid "Enter the country code: " ["e", "f", "l", "n", "w"]
         let countryHasjourneyman = hasAJourneyman countryCode journeymanL
-        let countryName = getCountryName countryCode ["Earth", "Fire", "Lightning", "Wind", "Water"]
+        let countryName = getCountryName countryCode
         let country = getCountry countryCode ninjas
         if null country then do
                 putStrLn "This country has no ninja."
@@ -154,14 +173,8 @@ allNinjaInfo ninjas journeymanL = do
 
 ninjaRound :: [[Ninja]] -> [Bool] -> IO()
 ninjaRound ninjas journeymanL = do
-
-        -- Each country will promote only 1 ninja to journeyman. Therefore, if this country has already 1
-        -- promoted ninja, then a warning will be given to the user and any ninja from this country cannot be
-        -- included to the fights anymore even if they are not disqualified. You can use a Boolean flag for each
-        -- country in order to give this warning.
-
-        ninja1 <- getithNinja 1 ninjas
-        ninja2 <- getithNinja 2 ninjas
+        ninja1 <- getithNinja 1 ninjas journeymanL
+        ninja2 <- getithNinja 2 ninjas journeymanL
         if country ninja1 == country ninja2 then do
                 if ninja1 == ninja2 then do
                         putStrLn $ name ninja1 ++ " refuses to punch itself. Try again."
@@ -174,18 +187,15 @@ ninjaRound ninjas journeymanL = do
 
 countryRound :: [[Ninja]] -> [Bool] -> IO()
 countryRound ninjas journeymanL = do
-        country1 <- inputUntilValid "Enter the first country code: " ["e","f","l","n","w"]
-        country2 <- inputUntilValid "Enter the second country code: " ["e","f","l","n","w"]
-        if country1 == country2 then do
-                if country1 == "f" then do
+        ninja1 <- getithCountrysNinja 1 ninjas journeymanL
+        ninja2 <- getithCountrysNinja 2 ninjas journeymanL
+        if country ninja1 == country ninja2 then do
+                if country ninja1 == 'f' then do
                         putStrLn "You can't fight fire with fire :)"
                 else
                         putStrLn "Please select two distinct countries."
                 countryRound ninjas journeymanL
         else do
-                -- check if empty
-                let ninja1 = head $ (getCountry country1 ninjas)
-                let ninja2 = head $ (getCountry country2 ninjas)
                 makeARound ninja1 ninja2 ninjas journeymanL
 
 journeymanList :: [[Ninja]] -> [Bool] -> IO()
