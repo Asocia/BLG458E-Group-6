@@ -110,15 +110,23 @@ fight n1 n2 = if totalScore1 < totalScore2 then (n1, n2) else (n2, n1)
                 totalScore1 = score n1 + (impact (ability1 n1) + impact (ability2 n1)) * fromIntegral (fromEnum (score n1 == score n2))
                 totalScore2 = score n2 + (impact (ability1 n2) + impact (ability2 n2)) * fromIntegral (fromEnum (score n1 == score n2))
 
+updateJourneymanList :: [Bool] -> Int -> [Bool]
+updateJourneymanList journeymanL n
+        | n < 0     = journeymanL
+        | otherwise = take n journeymanL ++ [True] ++ drop (n + 1) journeymanL
+
 makeARound :: Ninja -> Ninja -> [[Ninja]] -> [Bool] -> IO ()
 makeARound ninja1 ninja2 ninjas journeymanL = do
         let (looser, winner) = fight ninja1 ninja2
-        putStrLn $ "Winner: " ++ show winner -- MUST SHOW UPDATED WINNER HERE
-
+        let status = if (r winner) < 2 then "Junior" else "Journeyman"
+        let updatedWinner = winner {status = status, r = succ (r winner), score = (score winner)+10 }
+        putStrLn $ "Winner: " ++ show updatedWinner
+        let countryCode = [country winner]
+        let updateIndex = if status == "Journeyman" then getItem countryCode [0..4] else -1
+        let updatedJourneymanL = updateJourneymanList journeymanL updateIndex
         let ninjas' = updateNinja remove (looser) ninjas                                                                                                              
         let ninjas'' = updateNinja update (winner) ninjas'
-
-        showUIList False ninjas'' journeymanL
+        showUIList False ninjas'' updatedJourneymanL
         
 
 countryNinjaInfo :: [[Ninja]] -> [Bool] -> IO()
