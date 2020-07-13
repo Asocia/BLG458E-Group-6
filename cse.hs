@@ -112,14 +112,9 @@ update updated li = updatedList
                 updatedList = add toBeAdded listWithoutUpdated
                 
 
-updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja -> [[Ninja]] -> [[Ninja]]
-updateNinja func nin [e, f, l, n, w] = case (country nin) of
-        'e' -> [(func nin e),f,l,n,w]
-        'f' -> [e,(func nin f),l,n,w]
-        'l' -> [e,f,(func nin l),n,w]
-        'n' -> [e,f,l,(func nin n),w]
-        'w' -> [e,f,l,n,(func nin w)]
-        _   -> error ""
+updateNinja :: (Ninja -> [Ninja] -> [Ninja]) -> Ninja-> [(Char, [Ninja])] -> [(Char, [Ninja])]
+updateNinja func nin = map (\item -> if fst item == country nin then (fst item, func nin $ snd item) else item)
+
 
 fight :: Ninja -> Ninja -> (Ninja, Ninja)
 fight n1 n2 = if totalScore1 < totalScore2 then (n1, n2) else (n2, n1)
@@ -141,9 +136,11 @@ makeARound ninja1 ninja2 ninjas journeymanL = do
         let countryCode = [country winner]
         let updateIndex = if status == "Journeyman" then getItem countryCode [0..4] else -1
         let updatedJourneymanL = updateJourneymanList journeymanL updateIndex
-        let ninjas' = updateNinja remove (looser) ninjas                                                                                                              
-        let ninjas'' = updateNinja update (winner) ninjas'
-        showUIList False ninjas'' updatedJourneymanL
+        let ninjaDict = map(\ninjaCountry-> (country $ head ninjaCountry, ninjaCountry)) ninjas
+        let ninjas' = updateNinja remove looser ninjaDict
+        let ninjas'' = updateNinja update winner ninjas'
+        let ninjas''' = map(\t->snd t) ninjas''
+        showUIList False ninjas''' updatedJourneymanL
         
 
 countryNinjaInfo :: [[Ninja]] -> [Bool] -> IO()
