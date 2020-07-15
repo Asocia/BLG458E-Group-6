@@ -129,7 +129,7 @@ updateJourneymanList journeymanL n
 
 makeARound :: Ninja -> Ninja -> [[Ninja]] -> [Bool] -> IO ()
 makeARound ninja1 ninja2 ninjas journeymanL = do
-        let (looser, winner) = fight ninja1 ninja2
+        let (loser, winner) = fight ninja1 ninja2
         let status = if (r winner) < 2 then "Junior" else "Journeyman"
         let updatedWinner = winner {status = status, r = succ (r winner), score = (score winner)+10 }
         putStrLn $ "Winner: " ++ show updatedWinner
@@ -137,7 +137,7 @@ makeARound ninja1 ninja2 ninjas journeymanL = do
         let updateIndex = if status == "Journeyman" then getItem countryCode [0..4] else -1
         let updatedJourneymanL = updateJourneymanList journeymanL updateIndex
         let ninjaDict = map(\ninjaCountry-> (country $ head ninjaCountry, ninjaCountry)) ninjas
-        let ninjas' = updateNinja remove looser ninjaDict
+        let ninjas' = updateNinja remove loser ninjaDict
         let ninjas'' = updateNinja update winner ninjas'
         let ninjas''' = map(\t->snd t) ninjas''
         showUIList False ninjas''' updatedJourneymanL
